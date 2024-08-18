@@ -22,12 +22,15 @@ Group By customer.customer_id Order By max_spend Desc Limit 1;
                                         ---MODERATE---
 /* Q1: Write query to return the email, first name, last name, & Genre of all Rock Music listeners. 
 Return your list ordered alphabetically by email starting with A. */
-select email , first_name , last_name , track.track_id , genre."name" from customer 
+SELECT DISTINCT email,first_name, last_name
+FROM customer
 JOIN invoice ON customer.customer_id = invoice.customer_id
 JOIN invoice_line ON invoice.invoice_id = invoice_line.invoice_id
-JOIN track ON track.track_id = invoice_line.track_id 
-JOIN genre ON genre.genre_id = track.genre_id
-WHERE genre.name = 'Rock' ORDER BY email ASC;
+WHERE track_id IN(
+	SELECT track_id FROM track
+	JOIN genre ON track.genre_id = genre.genre_id
+	WHERE genre.name LIKE 'Rock')
+ORDER BY email;
 
 /* Q2: Let's invite the artists who have written the most rock music in our dataset. 
 Write a query that returns the Artist name and total track count of the top 10 rock bands. */
