@@ -75,18 +75,19 @@ limit 10;
 with the highest amount of purchases. Write a query that returns each country along with the top Genre. For countries where 
 the maximum number of purchases is shared return all Genres. */
 
-WITH Popular_genre as(
-	select COUNT(invoice_line.quantity) as  sold_track , genre.name as genre_name , customer.country as country , genre.genre_id as g_id,
-	ROW_NUMBER() OVER(PARTITION BY customer.country ORDER BY COUNT(invoice_line.quantity) DESC) as country_id
-	from genre
-	join track on genre.genre_id = track.genre_id 
-	join invoice_line on track.track_id = invoice_line.track_id
-	join invoice on invoice.invoice_id = invoice_line.invoice_id
-	join customer on invoice.customer_id = customer.customer_id
-	group by 2,3,4
-	order by 1 DESC
+WITH popular_genre AS 
+(
+    SELECT COUNT(invoice_line.quantity) AS purchases, customer.country, genre.name, genre.genre_id, 
+	ROW_NUMBER() OVER(PARTITION BY customer.country ORDER BY COUNT(invoice_line.quantity) DESC) AS RowNo 
+    FROM invoice_line 
+	JOIN invoice ON invoice.invoice_id = invoice_line.invoice_id
+	JOIN customer ON customer.customer_id = invoice.customer_id
+	JOIN track ON track.track_id = invoice_line.track_id
+	JOIN genre ON genre.genre_id = track.genre_id
+	GROUP BY 2,3,4
+	ORDER BY 2 ASC, 1 DESC
 )
-select * from popular_genre where country_id <=1;
+SELECT * FROM popular_genre WHERE RowNo <= 1
 
 /* Q3: Write a query that determines the customer that has spent the most on music for each country. 
 Write a query that returns the country along with the top customer and how much they spent. 
